@@ -8,6 +8,7 @@ commands and configuration, the [design](docs/design.md) for architecture, the
 ## Work rules
 
 - The project owner is B.T. Franklin.
+- Work on `main`. Create a branch or pull request only if the owner asks.
 - Write technical text and comments in ASD-STE100 Simplified Technical English.
 - Check document structure. Do not add prose grading, spelling checks, topic
   requirements, AI calls, or document-code execution.

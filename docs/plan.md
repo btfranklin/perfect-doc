@@ -155,6 +155,24 @@ The [tap maintenance guide](https://github.com/btfranklin/homebrew-tap/blob/main
 owns the bottle and public installation procedure. Upgrade verification needs
 the next real source release. It has not been run for the first release.
 
+On 2026-10-04 in `America/Phoenix`, the tap release process changed to use
+`main` directly. The [new bottle build run](https://github.com/btfranklin/homebrew-tap/actions/runs/37232849181)
+passed both target jobs for commit
+`a0f43843343ca62bbc5c9cdfc4d3aad8748365c3`. Eight bottle validation tests passed
+locally and on the macOS runner. They cover missing artifacts, wrong release
+metadata, checksum failures, duplicate targets, and Homebrew rebuild filenames.
+
+The [publication preview](https://github.com/btfranklin/homebrew-tap/actions/runs/37233527862)
+passed. It checked the current tested commit, downloaded both artifacts,
+verified their metadata and SHA-256 checksums, prepared the bottle formula,
+and passed Homebrew style and strict online audit checks. The
+[existing-version check](https://github.com/btfranklin/homebrew-tap/actions/runs/37233653620)
+stopped as required because the 0.1.0 bottle release already exists. All upload,
+attestation, and push steps were skipped. The public asset digests stayed
+unchanged. The new publication workflow will upload and commit directly to
+`main`; that path needs a new source release for its first complete runtime
+check. No branch, pull request, or new release was created for this change.
+
 ## Capability work
 
 The original staged plan is now a status map. Core scanning, configuration,

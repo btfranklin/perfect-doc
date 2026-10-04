@@ -78,4 +78,7 @@ behavior. Record the hosted checks and public download evidence in the plan.
 Homebrew formula updates and bottles use the
 [tap maintenance procedure](https://github.com/btfranklin/homebrew-tap/blob/main/docs/maintaining.md).
 That procedure owns bottle builds, publication, and public installation checks.
+Update the tap formula on `main`, then use its successful bottle build run for
+publication. The tap workflow has a preview mode and pushes the bottle checksums
+directly to `main`. It does not need a branch or pull request.
 Registry publication has separate release gates in the plan.
