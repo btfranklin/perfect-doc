@@ -35,9 +35,15 @@ git push origin v0.1.0
 The [release workflow](../.github/workflows/release.yml) calls the same CI
 workflow from the tagged commit. It checks the tag against the Cargo version.
 Each native job builds an archive, extracts it, and runs both a valid scan and
-a broken-link scan with the extracted executable. The
+a broken-link scan with the extracted executable. It also checks the included
+[native README](../packages/native/README.md) from the extracted archive. The
 [archive builder](../scripts/release-artifacts.py) owns archive layout, binary
 signature checks, version checks, and SHA-256 files.
+
+CI generates dependency license notices once from the locked Cargo graph with
+Cargo-about. It includes them and the Rust standard library MIT license in each
+archive. The notice configuration is [about.toml](../about.toml); its text
+template is [third-party-notices.hbs](../scripts/third-party-notices.hbs).
 
 After all target checks pass, the workflow verifies the archive checksums and
 creates a draft GitHub release with four archives and `SHA256SUMS`. Only this

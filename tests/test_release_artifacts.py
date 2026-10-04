@@ -16,6 +16,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 BUILDER = ROOT / "scripts" / "release-artifacts.py"
+PACKAGED_README = ROOT / "packages" / "native" / "README.md"
 with (ROOT / "Cargo.toml").open("rb") as source:
     PACKAGE = tomllib.load(source)["package"]
 PACKAGE_NAME = PACKAGE["name"]
@@ -108,11 +109,16 @@ class ReleaseArtifactTests(unittest.TestCase):
         if not self.binary.is_file():
             self.skipTest("build the local release binary first")
 
+        notices = self.directory / "THIRD-PARTY-NOTICES.txt"
+        notice_bytes = b"Third-party dependency notices.\nGenerated for this test.\n"
+        notices.write_bytes(notice_bytes)
         result = self.run_builder(
             "--target",
             self.target,
             "--binary",
             str(self.binary),
+            "--notices",
+            str(notices),
             "--tag",
             f"v{PACKAGE_VERSION}",
             "--out-dir",
@@ -133,23 +139,45 @@ class ReleaseArtifactTests(unittest.TestCase):
                 root = f"{PACKAGE_NAME}-{PACKAGE_VERSION}-{self.target}"
                 self.assertEqual(
                     names,
-                    {f"{root}/{PACKAGE_NAME}.exe", f"{root}/LICENSE", f"{root}/README.md"},
+                    {
+                        f"{root}/{PACKAGE_NAME}.exe",
+                        f"{root}/LICENSE",
+                        f"{root}/README.md",
+                        f"{root}/THIRD-PARTY-NOTICES.txt",
+                    },
                 )
                 mode = package.getinfo(f"{root}/{PACKAGE_NAME}.exe").external_attr >> 16
                 self.assertTrue(mode & 0o111)
+                self.assertEqual(
+                    package.read(f"{root}/THIRD-PARTY-NOTICES.txt"), notice_bytes
+                )
+                self.assertEqual(
+                    package.read(f"{root}/README.md"), PACKAGED_README.read_bytes()
+                )
         else:
             with tarfile.open(archive, "r:gz") as package:
                 members = {member.name: member for member in package.getmembers()}
                 root = f"{PACKAGE_NAME}-{PACKAGE_VERSION}-{self.target}"
                 self.assertEqual(
                     set(members),
-                    {f"{root}/{PACKAGE_NAME}", f"{root}/LICENSE", f"{root}/README.md"},
+                    {
+                        f"{root}/{PACKAGE_NAME}",
+                        f"{root}/LICENSE",
+                        f"{root}/README.md",
+                        f"{root}/THIRD-PARTY-NOTICES.txt",
+                    },
                 )
                 binary_member = members[f"{root}/{PACKAGE_NAME}"]
                 self.assertEqual(binary_member.mode & 0o777, 0o755)
                 self.assertEqual((binary_member.uid, binary_member.gid), (0, 0))
                 self.assertEqual((binary_member.uname, binary_member.gname), ("", ""))
                 self.assertEqual(binary_member.mtime, 0)
+                notice_member = package.extractfile(f"{root}/THIRD-PARTY-NOTICES.txt")
+                self.assertIsNotNone(notice_member)
+                self.assertEqual(notice_member.read(), notice_bytes)
+                readme_member = package.extractfile(f"{root}/README.md")
+                self.assertIsNotNone(readme_member)
+                self.assertEqual(readme_member.read(), PACKAGED_README.read_bytes())
 
 
 if __name__ == "__main__":

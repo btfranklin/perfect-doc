@@ -1,0 +1,9 @@
+# Generate notices for the locked native dependencies. Prefer MIT where offered.
+accepted = [
+    "MIT", "Apache-2.0", "BSD-3-Clause", "BSD-2-Clause", "ISC", "Unicode-3.0",
+    "Zlib", "MPL-2.0", "CDLA-Permissive-2.0", "MIT-0", "0BSD", "CC0-1.0",
+    "BSL-1.0", "Apache-2.0 WITH LLVM-exception", "Unlicense",
+]
+ignore-dev-dependencies = true
+ignore-build-dependencies = true
+workarounds = ["ring", "rustls"]

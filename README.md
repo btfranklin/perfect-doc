@@ -65,10 +65,10 @@ banner. The font is not required at run time.
 
 The [GitHub releases page](https://github.com/btfranklin/perfect-doc/releases)
 is the download location for native archives. Each archive contains the
-executable, README, and MIT license. Verify its checksum against `SHA256SUMS`,
-then extract it and place the executable on your `PATH`. See the
-[release notes](docs/release-notes.md#native-downloads) for tested targets and
-runtime requirements.
+executable, README, MIT license, and dependency license notices. Verify its
+checksum against `SHA256SUMS`, then extract it and place the executable on your
+`PATH`. See the [release notes](docs/release-notes.md#native-downloads) for tested
+targets and runtime requirements.
 
 With Rust 1.99 or later, install from GitHub:
 

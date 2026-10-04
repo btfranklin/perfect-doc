@@ -258,8 +258,10 @@ Use the package version from `Cargo.toml` in these file names. The builder
 prints the actual archive paths.
 
 The Python and npm packages are local build outputs. They are not published.
-The npm package names and registry availability have not been checked. Only the
-Apple Silicon macOS native binary, Python wheel, and npm packages have been run
-locally. Other target shapes have package-metadata tests, but no cross-platform
-runtime evidence. See the [implementation plan](plan.md) before treating a
-target as supported for release.
+The npm package names and registry availability have not been checked. The
+Python wheel and npm packages have been installed and run on Apple Silicon
+macOS. Native executables and their release archives have also passed hosted
+checks on Linux x64, Windows x64, and both macOS CPUs. These native checks do not
+prove wrapper installation on each target. See the
+[implementation plan](plan.md) for evidence and the
+[release notes](release-notes.md#native-downloads) for native system requirements.

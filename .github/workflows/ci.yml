@@ -20,8 +20,53 @@ concurrency:
   cancel-in-progress: ${{ inputs.release-tag == '' }}
 
 jobs:
+  licenses:
+    name: Generate dependency notices
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Prepare Rust
+        run: rustup update stable --no-self-update
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cargo/registry
+          key: licenses-${{ hashFiles('Cargo.lock') }}
+      - name: Generate release notices
+        run: |
+          cargo fetch --locked
+          tool=cargo-about-0.9.2-x86_64-unknown-linux-musl
+          tool_dir="$RUNNER_TEMP/cargo-about"
+          mkdir -p "$tool_dir" dist/licenses
+          cd "$tool_dir"
+          curl --fail --location --silent --show-error \
+            "https://github.com/EmbarkStudios/cargo-about/releases/download/0.9.2/$tool.tar.gz" \
+            --output "$tool.tar.gz"
+          curl --fail --location --silent --show-error \
+            "https://github.com/EmbarkStudios/cargo-about/releases/download/0.9.2/$tool.tar.gz.sha256" \
+            --output "$tool.tar.gz.sha256"
+          sha256sum --check "$tool.tar.gz.sha256"
+          tar -xzf "$tool.tar.gz" --strip-components=1
+          cd "$GITHUB_WORKSPACE"
+          "$tool_dir/cargo-about" generate --locked --fail \
+            --output-file dist/licenses/THIRD-PARTY-NOTICES.txt \
+            scripts/third-party-notices.hbs
+          rust_version="$(rustc --version | cut -d ' ' -f 2)"
+          printf '\nRust standard library %s\n\n' "$rust_version" >> dist/licenses/THIRD-PARTY-NOTICES.txt
+          curl --fail --location --silent --show-error \
+            "https://raw.githubusercontent.com/rust-lang/rust/$rust_version/LICENSE-MIT" \
+            >> dist/licenses/THIRD-PARTY-NOTICES.txt
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: license-notices
+          path: dist/licenses/THIRD-PARTY-NOTICES.txt
+          if-no-files-found: error
+          retention-days: 14
   check:
     name: Check ${{ matrix.target }}
+    needs: licenses
     runs-on: ${{ matrix.os }}
     timeout-minutes: 40
     strategy:
@@ -114,6 +159,11 @@ jobs:
         run: cargo build --release --locked --offline --bin perfect-doc
       - name: Check package and archive behavior
         run: pdm run python -m unittest discover -s tests -p 'test_*.py' -v
+      - name: Download generated dependency notices
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: license-notices
+          path: dist/licenses
       - name: Build and run the release archive
         run: |
           tag_args=()

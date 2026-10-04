@@ -20,7 +20,7 @@ conformance, computed accessibility, browser rendering, or all catalog rules.
 | Reports | Human, JSON, JUnit, and SARIF formats are available. |
 | Python and npm packages | Local build paths are implemented. They are not published. |
 | Full accepted check catalog | Incomplete; see [usage limits](usage.md) and [checks](checks.md). |
-| Other operating systems and CPUs | The four native CI targets await their first hosted verification. |
+| Native target runtime checks | Passed on Linux x64, Windows x64, and both macOS CPUs. |
 | Remote repository | Public source is hosted at `btfranklin/perfect-doc` on GitHub. |
 | Hosted CI | Configured for Linux x64, Windows x64, and both macOS CPUs. |
 | GitHub native release | The `v0.1.0` release procedure and archive builds are prepared. |
@@ -42,7 +42,7 @@ The local source checks passed:
 
 - 210 Rust tests, including property tests, controlled HTTP tests, source map
   checks, report checks, and public library and command tests.
-- 12 Python package and launcher tests.
+- 16 Python package, launcher, and native archive tests.
 - 140 repeated HTTP fixture runs with concurrent test processes after the
   accepted socket handling fix.
 - Python, Node.js, and Make integration examples with the native executable.
@@ -50,6 +50,8 @@ The local source checks passed:
 - The repository's own documentation scan.
 - GitHub source installation in a temporary prefix, followed by an offline
   scan with the installed executable.
+- A native archive with dependency notices, an extracted executable, a scan
+  of its README, a valid document scan, and an actionable broken-link result.
 
 The locally verified tool versions were:
 
@@ -73,6 +75,22 @@ The language examples call the same native executable. They do not contain a
 second validator. The Python and npm build instructions are in the
 [usage guide](usage.md). Build artifacts stay in ignored `dist/` and `target/`
 directories.
+
+## Hosted verification
+
+The native source and archive checks passed in
+[CI run 37172936267](https://github.com/btfranklin/perfect-doc/actions/runs/37172936267)
+for commit `cd1c7927b63bea2de043ba796284f6573243370f`. Each target ran the Rust
+checks, repository scan, Python, Node.js, and Make examples, package tests, and
+an extracted native release executable. The archive checks verified its version,
+a valid scan, and an actionable broken-link result.
+
+The runners were Ubuntu 24.04 x64, Windows Server 2025 x64, macOS 15 Apple
+Silicon, and macOS 15 Intel. The Windows executable links the C runtime
+statically. Its imported libraries do not include Visual C++ runtime DLLs.
+These checks prove the native executable on those systems. They do not prove
+Python wheel or npm installation on all four targets. The first release must
+also pass the checks for its exact tagged source.
 
 ## Capability work
 
@@ -114,20 +132,21 @@ The Python wheel uses Maturin `bin` mode. The npm builder creates a private
 launcher package and one private native package per selected target. Both call
 the same executable. The configured targets are:
 
-| Rust target | npm platform package suffix | Runtime evidence |
+| Rust target | npm platform package suffix | Native runtime evidence |
 | --- | --- | --- |
-| `aarch64-apple-darwin` | `darwin-arm64` | Built and run locally. |
-| `x86_64-apple-darwin` | `darwin-x64` | Not run. |
-| `x86_64-unknown-linux-gnu` | `linux-x64-gnu` | Not run. |
+| `aarch64-apple-darwin` | `darwin-arm64` | Local macOS and macOS 15 CI. |
+| `x86_64-apple-darwin` | `darwin-x64` | macOS 15 Intel CI. |
+| `x86_64-unknown-linux-gnu` | `linux-x64-gnu` | Ubuntu 24.04 x64 CI. |
 | `x86_64-unknown-linux-musl` | `linux-x64-musl` | Not run. |
-| `x86_64-pc-windows-msvc` | `win32-x64` | Not run. |
+| `x86_64-pc-windows-msvc` | `win32-x64` | Windows Server 2025 x64 CI. |
 
 The package names are candidates. Registry availability is unknown. The Cargo
 manifest sets `publish = false`. The owner selected the [MIT license](../LICENSE).
 Cargo and Python metadata declare MIT. Both npm packages declare MIT and include
 the license text. No wheel or npm package has been published.
 
-Before publication, verify package names, select release identities, and obtain
+Follow the [release procedure](releasing.md) for native GitHub releases. Before
+registry publication, verify package names, select release identities, and obtain
 the owner's authorization for registry access. Build and run each
 claimed platform package on its target system. Verify offline use, dependency
 requirements, package contents, and recovery instructions. Do not configure a

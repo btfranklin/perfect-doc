@@ -22,7 +22,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 PACKAGE_HELPER = ROOT / "scripts" / "package-npm.py"
 LICENSE = ROOT / "LICENSE"
-README = ROOT / "README.md"
+README = ROOT / "packages" / "native" / "README.md"
+DEFAULT_NOTICES = ROOT / "dist" / "licenses" / "THIRD-PARTY-NOTICES.txt"
 EXAMPLE_DOCS = ROOT / "examples" / "integration" / "docs"
 SUPPORTED_TARGETS = {
     "aarch64-apple-darwin",
@@ -92,7 +93,12 @@ def add_tar_file(archive: tarfile.TarFile, path: Path, name: str, mode: int) -> 
 
 
 def write_archive(
-    archive_path: Path, target: str, binary: Path, package_name: str, root_name: str
+    archive_path: Path,
+    target: str,
+    binary: Path,
+    package_name: str,
+    notices: Path,
+    root_name: str,
 ) -> None:
     binary_name = package_name + (".exe" if target == "x86_64-pc-windows-msvc" else "")
     if target == "x86_64-pc-windows-msvc":
@@ -101,6 +107,7 @@ def write_archive(
                 (binary, f"{root_name}/{binary_name}"),
                 (LICENSE, f"{root_name}/LICENSE"),
                 (README, f"{root_name}/README.md"),
+                (notices, f"{root_name}/THIRD-PARTY-NOTICES.txt"),
             ):
                 info = zipfile.ZipInfo(name)
                 info.compress_type = zipfile.ZIP_DEFLATED
@@ -112,6 +119,7 @@ def write_archive(
         add_tar_file(archive, binary, f"{root_name}/{binary_name}", 0o755)
         add_tar_file(archive, LICENSE, f"{root_name}/LICENSE", 0o644)
         add_tar_file(archive, README, f"{root_name}/README.md", 0o644)
+        add_tar_file(archive, notices, f"{root_name}/THIRD-PARTY-NOTICES.txt", 0o644)
 
 
 def extract_archive(archive_path: Path, destination: Path) -> Path:
@@ -143,6 +151,13 @@ def check_extracted(binary: Path, package_name: str, version: str, cwd: Path) ->
             )
         subprocess.run(
             [str(binary), "check", "--format", "json", "--offline", "--no-banner", str(EXAMPLE_DOCS)],
+            cwd=cwd,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        subprocess.run(
+            [str(binary), "check", "--format", "json", "--offline", "--no-banner", str(cwd)],
             cwd=cwd,
             check=True,
             capture_output=True,
@@ -214,12 +229,16 @@ def build(args: argparse.Namespace) -> Path:
             "build and check each archive on its native target runner"
         )
 
+    notices = args.notices.resolve()
+    if not notices.is_file() or notices.stat().st_size == 0:
+        raise ReleaseError(f"third-party notices file is missing or empty: {notices}")
+
     args.out_dir.mkdir(parents=True, exist_ok=True)
     extension = ".zip" if args.target == "x86_64-pc-windows-msvc" else ".tar.gz"
     archive_name = f"{package_name}-{version}-{args.target}{extension}"
     archive_path = args.out_dir.resolve() / archive_name
     root_name = f"{package_name}-{version}-{args.target}"
-    write_archive(archive_path, args.target, binary, package_name, root_name)
+    write_archive(archive_path, args.target, binary, package_name, notices, root_name)
 
     checksum_path = archive_path.with_name(archive_path.name + ".sha256")
     checksum_path.write_text(
@@ -246,6 +265,12 @@ def main() -> int:
     parser.add_argument("--binary", required=True, type=Path, help="built native executable")
     parser.add_argument(
         "--out-dir", type=Path, default=ROOT / "dist" / "release", help="output directory"
+    )
+    parser.add_argument(
+        "--notices",
+        type=Path,
+        default=DEFAULT_NOTICES,
+        help="third-party notices file; defaults to dist/licenses/THIRD-PARTY-NOTICES.txt",
     )
     parser.add_argument("--tag", help="release tag; must match v plus the Cargo package version")
     args = parser.parse_args()

@@ -1,0 +1,17 @@
+Perfect Doc dependency license notices
+
+These notices cover native dependencies from Cargo.lock. They include source
+repository links for the original dependency code.
+
+{{#each licenses}}
+==============================================================================
+{{name}} ({{id}})
+
+Used by:
+{{#each used_by}}
+  {{crate.name}} {{crate.version}}: {{{crate.repository}}}
+{{/each}}
+
+{{{text}}}
+
+{{/each}}

@@ -22,10 +22,10 @@ standard output. Offline scans are the default.
 
 ## Native downloads
 
-Each archive contains the executable, README, and MIT license. Verify its
-SHA-256 checksum against `SHA256SUMS` before use. Extract the archive and place
-the executable in a directory on your `PATH`. Python, Node.js, and Rust are not
-needed to run these native executables.
+Each archive contains the executable, README, MIT license, and dependency license
+notices. Verify its SHA-256 checksum against `SHA256SUMS` before use. Extract the
+archive and place the executable in a directory on your `PATH`. Python, Node.js,
+and Rust are not needed to run these native executables.
 
 | Archive target | Build and runtime check |
 | --- | --- |
