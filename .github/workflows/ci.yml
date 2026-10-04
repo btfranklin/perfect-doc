@@ -47,7 +47,7 @@ jobs:
           curl --fail --location --silent --show-error \
             "https://github.com/EmbarkStudios/cargo-about/releases/download/0.9.2/$tool.tar.gz.sha256" \
             --output "$tool.tar.gz.sha256"
-          sha256sum --check "$tool.tar.gz.sha256"
+          printf '%s  %s\n' "$(cat "$tool.tar.gz.sha256")" "$tool.tar.gz" | sha256sum --check
           tar -xzf "$tool.tar.gz" --strip-components=1
           cd "$GITHUB_WORKSPACE"
           "$tool_dir/cargo-about" generate --locked --fail \
