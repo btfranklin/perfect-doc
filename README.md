@@ -1,5 +1,7 @@
 # Perfect Doc
 
+![Perfect Doc banner](https://raw.githubusercontent.com/btfranklin/perfect-doc/main/.github/social%20preview/perfect_doc_social_preview.jpg "Perfect Doc")
+
 Perfect Doc is a Rust command-line tool and library that checks the structure
 of documentation collections. Use it in a unit test, a local test command, or
 any workflow that can run an executable and check its exit code.
