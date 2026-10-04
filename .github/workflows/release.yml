@@ -129,7 +129,7 @@ jobs:
               missing_checksums = sorted(expected_checksums - actual_checksums)
               unexpected_checksums = sorted(actual_checksums - expected_checksums)
               raise SystemExit(
-                  "Downloaded release artifacts do not match the four supported targets. "
+                  "Downloaded release artifacts do not match the three supported targets. "
                   f"Missing archives: {missing}; unexpected archives: {unexpected}; "
                   f"missing checksums: {missing_checksums}; "
                   f"unexpected checksums: {unexpected_checksums}."

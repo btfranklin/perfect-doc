@@ -28,7 +28,6 @@ function platformPackage() {
   const arch = process.arch;
 
   if (platform === 'darwin' && arch === 'arm64') return ['perfect-doc-darwin-arm64', null];
-  if (platform === 'darwin' && arch === 'x64') return ['perfect-doc-darwin-x64', null];
   if (platform === 'win32' && arch === 'x64') return ['perfect-doc-win32-x64', null];
   if (platform === 'linux' && arch === 'x64') {
     const libc = linuxLibc();

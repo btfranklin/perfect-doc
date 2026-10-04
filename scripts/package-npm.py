@@ -33,9 +33,6 @@ TARGETS = {
     "aarch64-apple-darwin": Target(
         "aarch64-apple-darwin", "darwin-arm64", "darwin", "arm64", None, "perfect-doc"
     ),
-    "x86_64-apple-darwin": Target(
-        "x86_64-apple-darwin", "darwin-x64", "darwin", "x64", None, "perfect-doc"
-    ),
     "x86_64-unknown-linux-gnu": Target(
         "x86_64-unknown-linux-gnu", "linux-x64-gnu", "linux", "x64", "glibc", "perfect-doc"
     ),
@@ -130,8 +127,7 @@ def binary_matches(binary: Path, target: Target, cargo_selected_target: bool) ->
         if endian is None or len(data) < 8:
             raise PackageError(f"binary signature does not match {triple}")
         cpu_type = struct.unpack_from(endian + "I", data, 4)[0]
-        expected = 0x0100000C if target.cpu == "arm64" else 0x01000007
-        if cpu_type != expected:
+        if cpu_type != 0x0100000C:
             raise PackageError(f"binary CPU signature does not match {triple}")
         return
 

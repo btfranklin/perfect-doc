@@ -27,7 +27,6 @@ DEFAULT_NOTICES = ROOT / "dist" / "licenses" / "THIRD-PARTY-NOTICES.txt"
 EXAMPLE_DOCS = ROOT / "examples" / "integration" / "docs"
 SUPPORTED_TARGETS = {
     "aarch64-apple-darwin",
-    "x86_64-apple-darwin",
     "x86_64-unknown-linux-gnu",
     "x86_64-pc-windows-msvc",
 }
@@ -49,8 +48,6 @@ def target_host() -> str | None:
         return {
             "arm64": "aarch64-apple-darwin",
             "aarch64": "aarch64-apple-darwin",
-            "x86_64": "x86_64-apple-darwin",
-            "amd64": "x86_64-apple-darwin",
         }.get(machine)
     if sys.platform.startswith("linux") and machine in {"x86_64", "amd64"}:
         libc, _ = platform.libc_ver()

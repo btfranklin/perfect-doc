@@ -131,7 +131,6 @@ class PackageBuilderTests(unittest.TestCase):
     def test_builder_packs_each_supported_target_shape(self) -> None:
         cases = [
             ("aarch64-apple-darwin", macho_fixture(0x0100000C), "darwin-arm64", "arm64", None),
-            ("x86_64-apple-darwin", macho_fixture(0x01000007), "darwin-x64", "x64", None),
             ("x86_64-unknown-linux-musl", elf_fixture("/lib/ld-musl-x86_64.so.1"), "linux-x64-musl", "x64", "musl"),
             ("x86_64-pc-windows-msvc", pe_fixture(), "win32-x64", "x64", None),
         ]
@@ -176,7 +175,6 @@ class LauncherTests(unittest.TestCase):
         cls.os_name, cls.cpu, cls.libc = node_platform(cls.node)
         suffixes = {
             ("darwin", "arm64"): "darwin-arm64",
-            ("darwin", "x64"): "darwin-x64",
             ("win32", "x64"): "win32-x64",
         }
         if cls.os_name == "linux" and cls.cpu == "x64":

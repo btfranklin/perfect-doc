@@ -27,7 +27,13 @@ def local_target() -> str | None:
     details = subprocess.check_output(["rustc", "-vV"], text=True)
     for line in details.splitlines():
         if line.startswith("host: "):
-            return line.removeprefix("host: ")
+            target = line.removeprefix("host: ")
+            if target in {
+                "aarch64-apple-darwin",
+                "x86_64-unknown-linux-gnu",
+                "x86_64-pc-windows-msvc",
+            }:
+                return target
     return None
 
 
@@ -81,27 +87,6 @@ class ReleaseArtifactTests(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 2)
         self.assertIn(f"tag must be v{PACKAGE_VERSION}", result.stderr)
-
-    def test_rejects_binary_for_a_different_cpu(self) -> None:
-        if not self.binary.is_file():
-            self.skipTest("build the local release binary first")
-        if not self.target or "apple-darwin" not in self.target:
-            self.skipTest("the available release binary has no alternate checked CPU target")
-        other_target = (
-            "x86_64-apple-darwin"
-            if self.target == "aarch64-apple-darwin"
-            else "aarch64-apple-darwin"
-        )
-        result = self.run_builder(
-            "--target",
-            other_target,
-            "--binary",
-            str(self.binary),
-            "--out-dir",
-            str(self.directory),
-        )
-        self.assertEqual(result.returncode, 2)
-        self.assertIn("CPU signature", result.stderr)
 
     def test_native_archive_extracts_and_passes_runtime_checks(self) -> None:
         if self.target is None:

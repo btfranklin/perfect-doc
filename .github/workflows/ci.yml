@@ -83,11 +83,6 @@ jobs:
             binary: perfect-doc
             macos-minimum: "15.0"
             rustflags: ""
-          - os: macos-15-intel
-            target: x86_64-apple-darwin
-            binary: perfect-doc
-            macos-minimum: "15.0"
-            rustflags: ""
           - os: windows-2025
             target: x86_64-pc-windows-msvc
             binary: perfect-doc.exe
