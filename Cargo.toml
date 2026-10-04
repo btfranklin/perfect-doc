@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2024"
 rust-version = "1.99"
 description = "Structural validation for complete documentation collections"
+repository = "https://github.com/btfranklin/perfect-doc"
 authors = ["B.T. Franklin"]
 readme = "README.md"
 license = "MIT"

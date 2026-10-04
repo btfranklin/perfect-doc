@@ -21,7 +21,8 @@ conformance, computed accessibility, browser rendering, or all catalog rules.
 | Python and npm packages | Local build paths are implemented. They are not published. |
 | Full accepted check catalog | Incomplete; see [usage limits](usage.md) and [checks](checks.md). |
 | Other operating systems and CPUs | Not verified at runtime. |
-| Hosted CI, remote repository, package publication | Not configured or requested. |
+| Remote repository | Public source is hosted at `btfranklin/perfect-doc` on GitHub. |
+| Hosted CI and package publication | Not configured. |
 
 Each diagnostic has a source location, rule, result, message, and repair help.
 It has a target when the check has one. Reports redact user information and

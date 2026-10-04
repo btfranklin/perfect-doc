@@ -63,6 +63,15 @@ banner. The font is not required at run time.
 
 ## Build and install
 
+With Rust 1.99 or later, install from GitHub:
+
+```sh
+cargo install --locked --git https://github.com/btfranklin/perfect-doc.git perfect-doc
+```
+
+This command builds the current `main` branch. You can then run `perfect-doc`
+from the project that owns the documents.
+
 Build and run the native executable with Cargo:
 
 ```sh

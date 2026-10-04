@@ -215,6 +215,8 @@ cargo build --locked --release --bin perfect-doc
 
 You can install a local Cargo build with `cargo install --locked --path .`.
 Cargo's package is not published.
+For a GitHub source install, use the command in the
+[README](../README.md#build-and-install).
 
 The project configures a Python wheel with Maturin's `bin` mode. Build a local
 wheel with:
