@@ -1,0 +1,17 @@
+# Apply the repository's structural documentation rules to its own documents.
+[markdown]
+heading_start = 1
+single_h1 = true
+no_heading_skips = true
+nonempty_headings = true
+nonempty_sections = true
+closed_fences = true
+table_columns = true
+undefined_references = true
+unused_definitions = true
+require_language = true
+structured_examples = true
+
+[files]
+portable_names = true
+hidden_characters = true

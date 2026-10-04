@@ -1,0 +1,57 @@
+[package]
+name = "perfect-doc"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.99"
+description = "Structural validation for complete documentation collections"
+authors = ["B.T. Franklin"]
+readme = "README.md"
+license = "MIT"
+publish = false
+
+[profile.release]
+lto = "thin"
+strip = true
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.rustdoc]
+broken_intra_doc_links = "deny"
+bare_urls = "deny"
+
+[dependencies]
+base64 = "0.23.1"
+biblatex = "0.12.0"
+clap = { version = "4.6.7", features = ["derive"] }
+cssparser = "0.38.0"
+ctrlc = "3.5.2"
+encoding_rs = "0.8.42"
+github-slugger = "0.1.0"
+globset = "0.4.20"
+html5gum = "0.8.4"
+image = { version = "0.25.10", default-features = false, features = ["png", "jpeg", "gif", "webp", "bmp", "ico", "tiff"] }
+jsonschema = { version = "0.58.5", default-features = false, features = ["idna"] }
+language-tags = "0.3.2"
+markdown = "1.0.0"
+oxc_allocator = "0.152.0"
+oxc_parser = "0.152.0"
+oxc_span = "0.152.0"
+percent-encoding = "2.3.2"
+regex = "1.13.1"
+reqwest = { version = "0.13.5", default-features = false, features = ["blocking", "rustls", "gzip", "brotli"] }
+roxmltree = "0.21.1"
+scraper = "0.27.0"
+serde = { version = "1.0.229", features = ["derive"] }
+serde-saphyr = "1.3.0"
+serde_json = "1.0.151"
+sha2 = "0.11.0"
+time = { version = "0.3.55", features = ["parsing", "formatting", "macros"] }
+toml = "1.1.6"
+unicode-normalization = "0.1.25"
+url = "2.5.8"
+walkdir = "2.5.0"
+
+[dev-dependencies]
+proptest = "1.11.0"
+tempfile = "3.27.0"
