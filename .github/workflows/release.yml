@@ -3,45 +3,145 @@ name: Release
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag to retry or recover
+        required: true
+        type: string
 
 permissions:
   contents: read
 
 concurrency:
-  group: release-${{ github.ref }}
+  group: release-${{ inputs.tag || github.ref_name }}
   cancel-in-progress: false
 
 jobs:
-  check:
-    uses: ./.github/workflows/ci.yml
-    with:
-      release-tag: ${{ github.ref_name }}
   draft:
-    name: Create tested release draft
-    needs: check
+    name: Create draft from tested CI artifacts
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
     permissions:
+      actions: read
       contents: write
     env:
       GH_TOKEN: ${{ github.token }}
-      RELEASE_TAG: ${{ github.ref_name }}
       GH_REPO: ${{ github.repository }}
+      RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ inputs.tag || github.ref_name }}
           persist-credentials: false
+      - name: Find a successful CI run for the tag commit
+        id: ci
+        run: |
+          if ! git check-ref-format "refs/tags/$RELEASE_TAG"; then
+            echo "::error::Invalid release tag: $RELEASE_TAG"
+            exit 1
+          fi
+
+          python3 - "$RELEASE_TAG" <<'PY'
+          import pathlib
+          import sys
+          import tomllib
+
+          tag = sys.argv[1]
+          with pathlib.Path("Cargo.toml").open("rb") as source:
+              version = tomllib.load(source)["package"]["version"]
+          expected = f"v{version}"
+          if tag != expected:
+              raise SystemExit(f"release tag {tag} does not match Cargo.toml; expected {expected}")
+          PY
+
+          tag_sha="$(git rev-parse --verify "refs/tags/${RELEASE_TAG}^{commit}")"
+          ci_runs="$RUNNER_TEMP/ci-runs.json"
+          gh api \
+            "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs?branch=main&event=push&head_sha=$tag_sha&status=success&per_page=1" \
+            > "$ci_runs"
+          python3 - "$tag_sha" "$ci_runs" "$GITHUB_OUTPUT" <<'PY'
+          import json
+          import pathlib
+          import sys
+
+          commit = sys.argv[1]
+          with pathlib.Path(sys.argv[2]).open(encoding="utf-8") as source:
+              response = json.load(source)
+          runs = [
+              run
+              for run in response.get("workflow_runs", [])
+              if run.get("head_sha") == commit
+              and run.get("event") == "push"
+              and run.get("head_branch") == "main"
+              and run.get("status") == "completed"
+              and run.get("conclusion") == "success"
+          ]
+          if not runs:
+              raise SystemExit(
+                  f"No completed successful ci.yml push run on main exists for {commit}; "
+                  "release artifacts are not available."
+              )
+          run = runs[0]
+          with pathlib.Path(sys.argv[3]).open("a", encoding="utf-8") as output:
+              output.write(f"run_id={run['id']}\n")
+          print(f"Using successful CI run {run['id']} for {commit}.")
+          PY
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
+          github-token: ${{ github.token }}
+          run-id: ${{ steps.ci.outputs.run_id }}
           pattern: native-*
           path: dist/release
           merge-multiple: true
       - name: Verify checksums and create the draft
         run: |
           cd dist/release
-          cat ./*.sha256 > SHA256SUMS
+          python3 - "$GITHUB_WORKSPACE" "$PWD" <<'PY'
+          import pathlib
+          import runpy
+          import sys
+
+          root = pathlib.Path(sys.argv[1])
+          release_dir = pathlib.Path(sys.argv[2])
+          builder = runpy.run_path(str(root / "scripts" / "release-artifacts.py"))
+          package_name, version = builder["package_metadata"]()
+          targets = builder["SUPPORTED_TARGETS"]
+          expected_archives = {
+              f"{package_name}-{version}-{target}"
+              + (".zip" if target == "x86_64-pc-windows-msvc" else ".tar.gz")
+              for target in targets
+          }
+          expected_checksums = {f"{name}.sha256" for name in expected_archives}
+          actual_archives = {
+              path.name
+              for path in release_dir.iterdir()
+              if path.is_file() and (path.name.endswith(".tar.gz") or path.name.endswith(".zip"))
+          }
+          actual_checksums = {
+              path.name
+              for path in release_dir.iterdir()
+              if path.is_file() and path.name.endswith(".sha256")
+          }
+          if actual_archives != expected_archives or actual_checksums != expected_checksums:
+              missing = sorted(expected_archives - actual_archives)
+              unexpected = sorted(actual_archives - expected_archives)
+              missing_checksums = sorted(expected_checksums - actual_checksums)
+              unexpected_checksums = sorted(actual_checksums - expected_checksums)
+              raise SystemExit(
+                  "Downloaded release artifacts do not match the four supported targets. "
+                  f"Missing archives: {missing}; unexpected archives: {unexpected}; "
+                  f"missing checksums: {missing_checksums}; "
+                  f"unexpected checksums: {unexpected_checksums}."
+              )
+          PY
+          shopt -s nullglob
+          archives=( ./*.tar.gz ./*.zip )
+          checksums=( ./*.sha256 )
+          cat "${checksums[@]}" > SHA256SUMS
           sha256sum --check SHA256SUMS
           gh release create "$RELEASE_TAG" \
             --verify-tag --draft \
             --title "Perfect Doc $RELEASE_TAG" \
-            --notes-file ../../docs/release-notes.md \
-            ./*.tar.gz ./*.zip SHA256SUMS
+            --notes-file "$GITHUB_WORKSPACE/docs/release-notes.md" \
+            "${archives[@]}" SHA256SUMS

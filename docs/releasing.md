@@ -14,8 +14,10 @@ state. The [release notes](release-notes.md) describe the current release.
    test.
 3. Run the [local checks](../README.md#local-checks). Commit and push the release
    source to `main`.
-4. Wait for all four native jobs in the
+4. Wait for the push run on `main` to pass all four native jobs in the
    [CI workflow](../.github/workflows/ci.yml). Correct failures before tagging.
+   CI stores the tested archives for 14 days. Create the release draft before
+   those artifacts expire.
 
 CI uses stable Rust, the latest stable Python and Node.js, and the locked project
 dependencies. Action revisions are pinned to verified official releases. The
@@ -23,7 +25,7 @@ Linux runner uses Ubuntu 24.04 as its build baseline. Both macOS runners use
 macOS 15 and deployment target 15.0. The Windows runner uses Windows Server 2025
 and links the C runtime statically.
 
-## Tag and build
+## Tag and promote
 
 Check that the tag is unused, then tag the tested commit. For the first release:
 
@@ -32,13 +34,17 @@ git tag -a v0.1.0 -m "Perfect Doc 0.1.0"
 git push origin v0.1.0
 ```
 
-The [release workflow](../.github/workflows/release.yml) calls the same CI
-workflow from the tagged commit. It checks the tag against the Cargo version.
-Each native job builds an archive, extracts it, and runs both a valid scan and
-a broken-link scan with the extracted executable. It also checks the included
-[native README](../packages/native/README.md) from the extracted archive. The
-[archive builder](../scripts/release-artifacts.py) owns archive layout, binary
-signature checks, version checks, and SHA-256 files.
+The [release workflow](../.github/workflows/release.yml) checks the tag against
+the Cargo version and finds a completed, successful push run of CI on `main`
+for the exact tag commit. It downloads the four native archives from that run.
+The tag promotes those tested artifacts. The release workflow does not compile
+the source or run CI a second time.
+
+Each native CI job builds an archive, extracts it, and runs both a valid scan
+and a broken-link scan with the extracted executable. It also checks the
+included [native README](../packages/native/README.md) from the extracted
+archive. The [archive builder](../scripts/release-artifacts.py) owns archive
+layout, binary signature checks, version checks, and SHA-256 files.
 
 CI generates dependency license notices once from the locked Cargo graph with
 Cargo-about. It includes them and the Rust standard library MIT license in each
@@ -46,9 +52,14 @@ archive. The notice configuration is [about.toml](../about.toml); its text
 template is [third-party-notices.hbs](../scripts/third-party-notices.hbs).
 
 After all target checks pass, the workflow verifies the archive checksums and
-creates a draft GitHub release with four archives and `SHA256SUMS`. Only this
-draft job has repository write permission. The workflow does not publish a
-release or write to a package registry.
+creates a draft GitHub release with four archives and `SHA256SUMS`. It uses the
+release notes from the tagged commit. Only this draft job has repository write
+permission. The workflow does not publish a release or write to a package
+registry.
+
+Use the workflow's manual dispatch with the existing tag to retry or recover a
+draft. The dispatch checks the same tag commit and retained successful CI
+artifacts. It does not start a new build or create a new tag.
 
 ## Publish and verify
 
