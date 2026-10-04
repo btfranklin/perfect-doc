@@ -10,6 +10,9 @@ use std::{
     },
 };
 
+// Text art follows the letter shapes of the Perfect Dark (BRK) font.
+const BANNER: &str = include_str!("banner.txt");
+
 #[derive(Parser)]
 #[command(
     name = "perfect-doc",
@@ -17,6 +20,9 @@ use std::{
     about = "Validate document structure, local references, and collection contracts."
 )]
 struct Cli {
+    /// Hide the ASCII banner in human-readable output.
+    #[arg(long, global = true)]
+    no_banner: bool,
     #[command(subcommand)]
     command: Command,
 }
@@ -78,6 +84,7 @@ fn run(cli: Cli) -> Result<u8, String> {
                     None,
                 )?;
             } else {
+                write_banner(cli.no_banner)?;
                 for rule in rules {
                     write_output(
                         &format!(
@@ -98,6 +105,7 @@ fn run(cli: Cli) -> Result<u8, String> {
                 .open(&path)
                 .map_err(|e| format!("Cannot create {}: {e}", path.display()))?;
             file.write_all(text.as_bytes()).map_err(|e| e.to_string())?;
+            write_banner(cli.no_banner)?;
             eprintln!("Created {}", path.display());
             Ok(0)
         }
@@ -150,10 +158,19 @@ fn run(cli: Cli) -> Result<u8, String> {
                 OutputFormat::Junit => report::junit(&result),
                 OutputFormat::Sarif => report::sarif(&result).map_err(|e| e.to_string())?,
             };
+            if matches!(format, OutputFormat::Human) && output.is_none() {
+                write_banner(cli.no_banner)?;
+            }
             write_output(&text, output)?;
             Ok(result.exit_code())
         }
     }
+}
+fn write_banner(no_banner: bool) -> Result<(), String> {
+    if no_banner {
+        return Ok(());
+    }
+    write_output(&format!("{BANNER}\n"), None)
 }
 fn write_output(text: &str, path: Option<PathBuf>) -> Result<(), String> {
     if let Some(path) = path {
@@ -174,10 +191,18 @@ fn write_output(text: &str, path: Option<PathBuf>) -> Result<(), String> {
     }
 }
 fn main() -> ExitCode {
-    let cli = match Cli::try_parse() {
+    let arguments: Vec<_> = std::env::args_os().collect();
+    let cli = match Cli::try_parse_from(&arguments) {
         Ok(cli) => cli,
         Err(error) => {
             let code = if error.use_stderr() { 2 } else { 0 };
+            if error.kind() == clap::error::ErrorKind::DisplayHelp
+                && !arguments.iter().any(|value| value == "--no-banner")
+                && let Err(error) = write_banner(false)
+            {
+                eprintln!("{error}");
+                return ExitCode::from(2);
+            }
             if let Err(error) = error.print() {
                 eprintln!("Cannot print command help: {error}");
                 return ExitCode::from(2);

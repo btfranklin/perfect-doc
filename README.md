@@ -49,6 +49,16 @@ Reports can use human-readable, JSON, JUnit, or SARIF output. A scan does not
 write a report file or cache unless you set `--output` or configure an online
 cache path. See [output and exit codes](docs/usage.md#output-and-exit-codes).
 
+Human-readable command output starts with a built-in ASCII banner based on
+the Perfect Dark (BRK) font. Use `--no-banner` to hide it:
+
+```sh
+perfect-doc check . --no-banner
+```
+
+Machine reports, configuration output, and `--version` do not include the
+banner. The font is not required at run time.
+
 ## Build and install
 
 Build and run the native executable with Cargo:

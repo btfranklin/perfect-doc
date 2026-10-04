@@ -37,7 +37,7 @@ Do not claim Windows or Linux runtime support from these checks.
 
 The local source checks passed:
 
-- 207 Rust tests, including property tests, controlled HTTP tests, source map
+- 210 Rust tests, including property tests, controlled HTTP tests, source map
   checks, report checks, and public library and command tests.
 - 12 Python package and launcher tests.
 - 140 repeated HTTP fixture runs with concurrent test processes after the

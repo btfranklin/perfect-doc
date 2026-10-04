@@ -81,6 +81,11 @@ the report model. It does not print or exit the process. The command parses
 options, calls the library, selects a report format, writes output, and returns
 an exit code.
 
+The command adds a built-in ASCII banner to human-readable standard output
+and help. The `--no-banner` option hides it. Machine reports, configuration,
+saved reports, and library report writers do not include the banner. The text
+art follows the Perfect Dark (BRK) font; it needs no installed font.
+
 The scan follows these steps:
 
 1. Load and validate the TOML configuration.

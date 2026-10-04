@@ -123,3 +123,80 @@ fn automatic_relative_configuration_is_loaded_from_the_current_directory() {
             .any(|d| d["rule"] == "markdown.heading-shape")
     );
 }
+
+#[test]
+fn human_output_has_a_banner_that_can_be_disabled() {
+    let dir = TempDir::new().unwrap();
+    std::fs::write(dir.path().join("page.md"), "# Page\n").unwrap();
+    let normal = run(&["check", dir.path().to_str().unwrap()]);
+    let plain = run(&["check", dir.path().to_str().unwrap(), "--no-banner"]);
+    assert!(normal.status.success());
+    assert!(plain.status.success());
+    let banner = include_str!("../src/banner.txt");
+    assert!(banner.is_ascii());
+    assert_eq!(
+        String::from_utf8(normal.stdout).unwrap(),
+        format!(
+            "{banner}\n{}",
+            String::from_utf8(plain.stdout.clone()).unwrap()
+        )
+    );
+    let path = dir.path().join("report.txt");
+    let saved = run(&[
+        "check",
+        dir.path().to_str().unwrap(),
+        "--output",
+        path.to_str().unwrap(),
+    ]);
+    assert!(saved.status.success());
+    assert!(saved.stdout.is_empty());
+    assert_eq!(std::fs::read(path).unwrap(), plain.stdout);
+}
+
+#[test]
+fn help_has_a_banner_that_can_be_disabled() {
+    for command in [vec!["--help"], vec!["check", "--help"]] {
+        let normal = run(&command);
+        let mut plain_command = vec!["--no-banner"];
+        plain_command.extend(command);
+        let plain = run(&plain_command);
+        assert!(normal.status.success());
+        assert!(plain.status.success());
+        let banner = include_str!("../src/banner.txt");
+        assert_eq!(
+            String::from_utf8(normal.stdout).unwrap(),
+            format!("{banner}\n{}", String::from_utf8(plain.stdout).unwrap())
+        );
+    }
+}
+
+#[test]
+fn banners_do_not_enter_machine_reports_or_configuration() {
+    let dir = TempDir::new().unwrap();
+    std::fs::write(dir.path().join("page.md"), "# Page\n").unwrap();
+    for format in ["json", "junit", "sarif"] {
+        let normal = run(&["check", dir.path().to_str().unwrap(), "--format", format]);
+        let plain = run(&[
+            "--no-banner",
+            "check",
+            dir.path().to_str().unwrap(),
+            "--format",
+            format,
+        ]);
+        assert!(normal.status.success());
+        assert_eq!(normal.stdout, plain.stdout);
+        match format {
+            "junit" => {
+                roxmltree::Document::parse(std::str::from_utf8(&normal.stdout).unwrap()).unwrap();
+            }
+            _ => {
+                serde_json::from_slice::<serde_json::Value>(&normal.stdout).unwrap();
+            }
+        }
+    }
+    let normal = run(&["check", "--show-config"]);
+    let plain = run(&["check", "--show-config", "--no-banner"]);
+    assert!(normal.status.success());
+    assert_eq!(normal.stdout, plain.stdout);
+    toml::from_str::<perfect_doc::Config>(std::str::from_utf8(&normal.stdout).unwrap()).unwrap();
+}

@@ -28,6 +28,11 @@ relative to the directory that contains that file.
 fail. The `--online` and `--offline` options override the configuration. They
 cannot appear together.
 
+`--no-banner` hides the ASCII banner in human-readable command output and help.
+You can put this option before or after the command. The banner follows the
+letter shapes of the Perfect Dark (BRK) font. It is built into the executable;
+the font is not required at run time.
+
 `init [PATH]` writes a default configuration. It uses `perfect-doc.toml` when no
 path is given. It does not replace an existing file. `rules` lists the rule IDs
 that this build supports. A rule can be disabled or require an explicit setting.
@@ -43,6 +48,11 @@ relative to the TOML file. Offline checks do not use the network cache.
 Select `--format human|json|junit|sarif`. JSON, JUnit, and SARIF are machine
 reports. When you use `--output`, the report goes to that file and standard
 output stays empty.
+
+JSON, JUnit, SARIF, effective configuration, and saved reports do not include
+the banner. Version output is also plain. Human-readable scan reports, rule
+listings, and help include it unless `--no-banner` is set. The library report
+writers do not add a banner.
 
 The command uses these exit codes:
 
