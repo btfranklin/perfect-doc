@@ -22,8 +22,8 @@ conformance, computed accessibility, browser rendering, or all catalog rules.
 | Full accepted check catalog | Incomplete; see [usage limits](usage.md) and [checks](checks.md). |
 | Native target runtime checks | Passed on Linux x64, Windows x64, and both macOS CPUs. |
 | Remote repository | Public source is hosted at `btfranklin/perfect-doc` on GitHub. |
-| Hosted CI | Configured for Linux x64, Windows x64, and both macOS CPUs. |
-| GitHub native release | The `v0.1.0` release procedure and archive builds are prepared. |
+| Hosted CI | Passed on Linux x64, Windows x64, and both macOS CPUs. |
+| GitHub native release | [v0.1.0](https://github.com/btfranklin/perfect-doc/releases/tag/v0.1.0) is public with four native archives and SHA-256 checksums. |
 | Registry publication and Homebrew | Not published. |
 
 Each diagnostic has a source location, rule, result, message, and repair help.
@@ -79,18 +79,37 @@ directories.
 ## Hosted verification
 
 The native source and archive checks passed in
-[CI run 37172936267](https://github.com/btfranklin/perfect-doc/actions/runs/37172936267)
-for commit `cd1c7927b63bea2de043ba796284f6573243370f`. Each target ran the Rust
+[CI run 37173813097](https://github.com/btfranklin/perfect-doc/actions/runs/37173813097)
+for commit `cd05572c55cfdc6ced9bd2b55f889a01a45a20b0`. Each target ran the Rust
 checks, repository scan, Python, Node.js, and Make examples, package tests, and
 an extracted native release executable. The archive checks verified its version,
-a valid scan, and an actionable broken-link result.
+included README, a valid scan, and an actionable broken-link result. Each archive
+contains the project license and generated dependency notices.
 
 The runners were Ubuntu 24.04 x64, Windows Server 2025 x64, macOS 15 Apple
 Silicon, and macOS 15 Intel. The Windows executable links the C runtime
 statically. Its imported libraries do not include Visual C++ runtime DLLs.
 These checks prove the native executable on those systems. They do not prove
-Python wheel or npm installation on all four targets. The first release must
-also pass the checks for its exact tagged source.
+Python wheel or npm installation on all four targets.
+
+The release executable build steps in the initial tagged workflow took 55
+seconds on Linux, 77 seconds on Windows, 92 seconds on Apple Silicon, and 123
+seconds on Intel macOS. Environment setup, cache restore, and source checks add
+time. The release workflow now copies the tested archives from a successful CI
+run for the exact tag commit. It does not compile that commit a second time.
+
+The [archive transfer run](https://github.com/btfranklin/perfect-doc/actions/runs/37175029397)
+passed with an 11-second draft job. It selected the source CI run above, checked
+the tag against Cargo, checked the complete target archive set, and verified
+all checksums. The `v0.1.0` tag still points to that tested source commit.
+
+The release was published on 2026-10-03 in `America/Phoenix`. All five public
+assets were downloaded without credentials. All four archive checksums and all
+five GitHub asset digests matched. The public Apple Silicon archive also passed
+version, README, valid scan, and actionable broken-link checks on local macOS
+27.0. The public Windows executable's imported libraries confirmed static C
+runtime linking. Linux, Windows, and Intel macOS runtime evidence comes from
+the native CI jobs that produced those exact released archives.
 
 ## Capability work
 
