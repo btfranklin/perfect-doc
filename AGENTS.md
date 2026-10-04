@@ -53,6 +53,7 @@ tests for valid, invalid, and ambiguous input. Check source locations, profile
 behavior, result status, and exit codes where they apply. Record unsupported
 cases in the plan.
 
-For packaging, read the installation design and release gates. Verify package
+For packaging, read the [release procedure](docs/releasing.md), installation
+design, and release gates. Verify package
 names, licenses, and target support before publication. The Cargo package is
 currently marked `publish = false`.

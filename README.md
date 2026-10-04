@@ -63,6 +63,13 @@ banner. The font is not required at run time.
 
 ## Build and install
 
+The [GitHub releases page](https://github.com/btfranklin/perfect-doc/releases)
+is the download location for native archives. Each archive contains the
+executable, README, and MIT license. Verify its checksum against `SHA256SUMS`,
+then extract it and place the executable on your `PATH`. See the
+[release notes](docs/release-notes.md#native-downloads) for tested targets and
+runtime requirements.
+
 With Rust 1.99 or later, install from GitHub:
 
 ```sh
@@ -85,9 +92,9 @@ that owns the documents. The native executable needs no Python or Node.js
 runtime.
 
 Local build workflows also produce a Python wheel and npm packages. They call
-the same native executable. The packages are not published. Native, Python,
-and npm installs have been run on Apple Silicon macOS; other targets have not
-been verified at runtime. See [build and install](docs/usage.md#build-and-install)
+the same native executable. The packages are not published. Python and npm
+installs have been run on Apple Silicon macOS. See
+[build and install](docs/usage.md#build-and-install)
 and the [release status](docs/plan.md#distribution-and-release-gates), including
 the remaining package release checks.
 
@@ -118,7 +125,8 @@ cargo fmt --all -- --check
 cargo clippy --all-targets --locked --offline -- -D warnings
 cargo test --locked --offline
 cargo doc --no-deps --locked --offline
-pdm run python -m unittest discover -s tests -p 'test_packaging.py'
+cargo build --locked --release --offline --bin perfect-doc
+pdm run python -m unittest discover -s tests -p 'test_*.py'
 PERFECT_DOC="$PWD/target/debug/perfect-doc" pdm run pytest examples/integration/test_docs.py
 PERFECT_DOC="$PWD/target/debug/perfect-doc" node --test examples/integration/docs.test.mjs
 make -C examples/integration check PERFECT_DOC="$PWD/target/debug/perfect-doc"
@@ -136,6 +144,7 @@ evidence is in the [implementation plan](docs/plan.md#local-verification).
 - [Check catalog](docs/checks.md) records all accepted check families. Catalog
   entries do not prove that every check is implemented.
 - [Implementation plan](docs/plan.md) records current capability and evidence.
+- [Release procedure](docs/releasing.md) explains CI, archives, and publication.
 - [Agent guide](AGENTS.md) records project work rules.
 
 ## License

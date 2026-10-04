@@ -20,9 +20,11 @@ conformance, computed accessibility, browser rendering, or all catalog rules.
 | Reports | Human, JSON, JUnit, and SARIF formats are available. |
 | Python and npm packages | Local build paths are implemented. They are not published. |
 | Full accepted check catalog | Incomplete; see [usage limits](usage.md) and [checks](checks.md). |
-| Other operating systems and CPUs | Not verified at runtime. |
+| Other operating systems and CPUs | The four native CI targets await their first hosted verification. |
 | Remote repository | Public source is hosted at `btfranklin/perfect-doc` on GitHub. |
-| Hosted CI and package publication | Not configured. |
+| Hosted CI | Configured for Linux x64, Windows x64, and both macOS CPUs. |
+| GitHub native release | The `v0.1.0` release procedure and archive builds are prepared. |
+| Registry publication and Homebrew | Not published. |
 
 Each diagnostic has a source location, rule, result, message, and repair help.
 It has a target when the check has one. Reports redact user information and

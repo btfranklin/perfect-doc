@@ -1,0 +1,133 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      release-tag:
+        description: Release tag to check against Cargo.toml
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}-${{ inputs.release-tag }}
+  cancel-in-progress: ${{ inputs.release-tag == '' }}
+
+jobs:
+  check:
+    name: Check ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            target: x86_64-unknown-linux-gnu
+            binary: perfect-doc
+            macos-minimum: ""
+            rustflags: ""
+          - os: macos-15
+            target: aarch64-apple-darwin
+            binary: perfect-doc
+            macos-minimum: "15.0"
+            rustflags: ""
+          - os: macos-15-intel
+            target: x86_64-apple-darwin
+            binary: perfect-doc
+            macos-minimum: "15.0"
+            rustflags: ""
+          - os: windows-2025
+            target: x86_64-pc-windows-msvc
+            binary: perfect-doc.exe
+            macos-minimum: ""
+            rustflags: "-C target-feature=+crt-static"
+    defaults:
+      run:
+        shell: bash
+    env:
+      CARGO_TERM_COLOR: always
+      CARGO_BUILD_TARGET: ${{ matrix.target }}
+      MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macos-minimum }}
+      RUSTFLAGS: ${{ matrix.rustflags }}
+      PERFECT_DOC: ${{ github.workspace }}/target/${{ matrix.target }}/debug/${{ matrix.binary }}
+      PERFECT_DOC_RELEASE_BINARY: ${{ github.workspace }}/target/${{ matrix.target }}/release/${{ matrix.binary }}
+      RELEASE_TAG: ${{ inputs.release-tag }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.x"
+          check-latest: true
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: node
+          check-latest: true
+      - name: Prepare Rust
+        id: rust
+        run: |
+          rustup update stable --no-self-update
+          rustup component add rustfmt clippy
+          python - <<'PY'
+          import os, subprocess
+          version = subprocess.check_output(["rustc", "--version"], text=True).split()[1]
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              output.write(f"version={version}\n")
+          PY
+          rustc -vV
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.cargo/registry
+            target
+          key: rust-${{ matrix.target }}-${{ steps.rust.outputs.version }}-${{ hashFiles('Cargo.lock') }}
+      - name: Prepare dependencies
+        run: |
+          cargo fetch --locked
+          python -m pip install --upgrade pdm
+          pdm install --frozen-lockfile --dev --no-self
+      - name: Prepare Make on Windows
+        if: runner.os == 'Windows'
+        run: choco install make --yes --no-progress
+      - name: Check Rust source
+        run: |
+          cargo fmt --all -- --check
+          cargo clippy --all-targets --locked --offline -- -D warnings
+          cargo test --locked --offline
+          cargo doc --no-deps --locked --offline
+      - name: Check documentation and language examples
+        run: |
+          "$PERFECT_DOC" check . --offline --no-banner
+          pdm run pytest examples/integration/test_docs.py
+          node --test examples/integration/docs.test.mjs
+          make -C examples/integration check
+          make -C examples/integration check-cargo
+      - name: Build the native release executable
+        run: cargo build --release --locked --offline --bin perfect-doc
+      - name: Check package and archive behavior
+        run: pdm run python -m unittest discover -s tests -p 'test_*.py' -v
+      - name: Build and run the release archive
+        run: |
+          tag_args=()
+          if [[ -n "$RELEASE_TAG" ]]; then
+            tag_args=(--tag "$RELEASE_TAG")
+          fi
+          python scripts/release-artifacts.py \
+            --target "$CARGO_BUILD_TARGET" \
+            --binary "$PERFECT_DOC_RELEASE_BINARY" \
+            "${tag_args[@]}"
+      - name: Upload tested archives
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: native-${{ matrix.target }}
+          path: dist/release/*
+          if-no-files-found: error
+          retention-days: 14
