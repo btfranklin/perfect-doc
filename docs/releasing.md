@@ -20,8 +20,9 @@ state. The [release notes](release-notes.md) describe the current release.
    those artifacts expire.
 
 CI uses stable Rust, the latest stable Python and Node.js, and the locked project
-dependencies. Action revisions are pinned to verified official releases. The
-Linux runner uses Ubuntu 24.04 as its build baseline. Both macOS runners use
+dependencies. External actions use the latest verified major version tags.
+These tags receive updates within that major version. The Linux runner uses
+Ubuntu 24.04 as its build baseline. Both macOS runners use
 macOS 15 and deployment target 15.0. The Windows runner uses Windows Server 2025
 and links the C runtime statically.
 

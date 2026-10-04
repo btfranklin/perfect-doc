@@ -25,12 +25,12 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: Prepare Rust
         run: rustup update stable --no-self-update
-      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      - uses: actions/cache@v6
         with:
           path: ~/.cargo/registry
           key: licenses-${{ hashFiles('Cargo.lock') }}
@@ -58,7 +58,7 @@ jobs:
           curl --fail --location --silent --show-error \
             "https://raw.githubusercontent.com/rust-lang/rust/$rust_version/LICENSE-MIT" \
             >> dist/licenses/THIRD-PARTY-NOTICES.txt
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@v7
         with:
           name: license-notices
           path: dist/licenses/THIRD-PARTY-NOTICES.txt
@@ -105,14 +105,14 @@ jobs:
       PERFECT_DOC_RELEASE_BINARY: ${{ github.workspace }}/target/${{ matrix.target }}/release/${{ matrix.binary }}
       RELEASE_TAG: ${{ inputs.release-tag }}
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.x"
           check-latest: true
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      - uses: actions/setup-node@v7
         with:
           node-version: node
           check-latest: true
@@ -128,7 +128,7 @@ jobs:
               output.write(f"version={version}\n")
           PY
           rustc -vV
-      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      - uses: actions/cache@v6
         with:
           path: |
             ~/.cargo/registry
@@ -160,7 +160,7 @@ jobs:
       - name: Check package and archive behavior
         run: pdm run python -m unittest discover -s tests -p 'test_*.py' -v
       - name: Download generated dependency notices
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@v8
         with:
           name: license-notices
           path: dist/licenses
@@ -175,7 +175,7 @@ jobs:
             --binary "$PERFECT_DOC_RELEASE_BINARY" \
             "${tag_args[@]}"
       - name: Upload tested archives
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@v7
         with:
           name: native-${{ matrix.target }}
           path: dist/release/*
