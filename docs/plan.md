@@ -46,6 +46,8 @@ The local source checks passed:
 - Python, Node.js, and Make integration examples with the native executable.
 - Rust formatting, Clippy with warnings denied, and API documentation.
 - The repository's own documentation scan.
+- GitHub source installation in a temporary prefix, followed by an offline
+  scan with the installed executable.
 
 The locally verified tool versions were:
 
