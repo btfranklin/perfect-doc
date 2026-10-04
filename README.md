@@ -63,6 +63,31 @@ banner. The font is not required at run time.
 
 ## Build and install
 
+Use Homebrew 7 or later. Add the tap and trust the formula once:
+
+```sh
+brew tap btfranklin/tap
+brew trust --formula btfranklin/tap/perfect-doc
+```
+
+Then install the stable release:
+
+```sh
+brew install perfect-doc
+```
+
+You can also add the tap, trust the formula, and install with one command:
+
+```sh
+brew install btfranklin/tap/perfect-doc
+```
+
+The [Homebrew tap](https://github.com/btfranklin/homebrew-tap) provides prebuilt
+bottles for Apple Silicon macOS and Linux x64. Bottle installation
+does not need Rust. A source build needs Homebrew's Rust build dependency.
+See the [release evidence](docs/plan.md#homebrew-verification) for tested systems.
+Supported macOS builds require Apple Silicon.
+
 The [GitHub releases page](https://github.com/btfranklin/perfect-doc/releases)
 is the download location for native archives. Each archive contains the
 executable, README, MIT license, and dependency license notices. Verify its

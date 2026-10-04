@@ -30,9 +30,12 @@ and Rust are not needed to run these native executables.
 | Archive target | Build and runtime check |
 | --- | --- |
 | `aarch64-apple-darwin` | macOS 15 on Apple Silicon; deployment target 15.0. |
-| `x86_64-apple-darwin` | macOS 15 on Intel; deployment target 15.0. |
 | `x86_64-unknown-linux-gnu` | Ubuntu 24.04 on x64, with glibc 2.39. |
 | `x86_64-pc-windows-msvc` | Windows Server 2025 on x64; the C runtime is linked statically. |
+
+Current macOS support requires Apple Silicon. The original v0.1.0 release also
+included an Intel macOS archive. That archive remains available but is no longer
+a supported target.
 
 Other operating system versions are not part of the first hosted runtime
 checks. Older glibc versions are not verified. A musl archive is not included.
@@ -51,5 +54,6 @@ for format limits. For language workflows, see the
 ## Distribution scope
 
 The Python wheel and npm packages have local build paths. They are not published
-to package registries. The Homebrew tap and bottles are a separate next stage;
-this release does not provide a stable Homebrew installation.
+to package registries. The
+[Homebrew tap](https://github.com/btfranklin/homebrew-tap) provides stable bottles
+for Apple Silicon macOS and Linux x64. See its README for installation commands.

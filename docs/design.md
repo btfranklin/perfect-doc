@@ -186,7 +186,8 @@ libc constraints. The configured target set is not the same as a verified
 release matrix. The [plan](plan.md) records which native and package targets
 have been tested. Package names are not confirmed as available in a registry.
 Perfect Doc uses the [MIT license](../LICENSE). The native package and the
-Python and npm packages declare this license. No package has been published.
+Python and npm packages declare this license. Python and npm packages have not
+been published. Native archives and Homebrew bottles use the same Rust command.
 
 See the [usage guide](usage.md) for exact local build commands and installation
 limits.

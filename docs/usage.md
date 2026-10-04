@@ -206,6 +206,11 @@ short-lived loopback fixtures; the validator itself is a command and library.
 
 ## Build and install
 
+For the stable Homebrew release or native GitHub downloads, use the commands in
+[the README](../README.md#build-and-install). Homebrew installs a prebuilt bottle
+on supported systems. The [plan](plan.md#homebrew-verification) records bottle
+runtime checks. Python and npm packages remain local build outputs.
+
 Build and run the native executable with Rust and Cargo:
 
 ```sh
@@ -240,7 +245,7 @@ python3 scripts/package-npm.py --target aarch64-apple-darwin
 ```
 
 The default target is the Rust host. Supported target labels are
-`aarch64-apple-darwin`, `x86_64-apple-darwin`, `x86_64-unknown-linux-gnu`,
+`aarch64-apple-darwin`, `x86_64-unknown-linux-gnu`,
 `x86_64-unknown-linux-musl`, and `x86_64-pc-windows-msvc`. You need the Rust
 target and any required cross linker to build a non-host target. The builder
 checks the binary signature and refuses an unsupported or mismatched target.
@@ -261,7 +266,7 @@ The Python and npm packages are local build outputs. They are not published.
 The npm package names and registry availability have not been checked. The
 Python wheel and npm packages have been installed and run on Apple Silicon
 macOS. Native executables and their release archives have also passed hosted
-checks on Linux x64, Windows x64, and both macOS CPUs. These native checks do not
+checks on Linux x64, Windows x64, and Apple Silicon macOS. These native checks do not
 prove wrapper installation on each target. See the
 [implementation plan](plan.md) for evidence and the
 [release notes](release-notes.md#native-downloads) for native system requirements.

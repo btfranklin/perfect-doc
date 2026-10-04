@@ -14,7 +14,7 @@ state. The [release notes](release-notes.md) describe the current release.
    test.
 3. Run the [local checks](../README.md#local-checks). Commit and push the release
    source to `main`.
-4. Wait for the push run on `main` to pass all four native jobs in the
+4. Wait for the push run on `main` to pass all three native jobs in the
    [CI workflow](../.github/workflows/ci.yml). Correct failures before tagging.
    CI stores the tested archives for 14 days. Create the release draft before
    those artifacts expire.
@@ -22,7 +22,7 @@ state. The [release notes](release-notes.md) describe the current release.
 CI uses stable Rust, the latest stable Python and Node.js, and the locked project
 dependencies. External actions use the latest verified major version tags.
 These tags receive updates within that major version. The Linux runner uses
-Ubuntu 24.04 as its build baseline. Both macOS runners use
+Ubuntu 24.04 as its build baseline. The Apple Silicon macOS runner uses
 macOS 15 and deployment target 15.0. The Windows runner uses Windows Server 2025
 and links the C runtime statically.
 
@@ -37,7 +37,7 @@ git push origin v0.1.0
 
 The [release workflow](../.github/workflows/release.yml) checks the tag against
 the Cargo version and finds a completed, successful push run of CI on `main`
-for the exact tag commit. It downloads the four native archives from that run.
+for the exact tag commit. It downloads the three native archives from that run.
 The tag promotes those tested artifacts. The release workflow does not compile
 the source or run CI a second time.
 
@@ -53,7 +53,7 @@ archive. The notice configuration is [about.toml](../about.toml); its text
 template is [third-party-notices.hbs](../scripts/third-party-notices.hbs).
 
 After all target checks pass, the workflow verifies the archive checksums and
-creates a draft GitHub release with four archives and `SHA256SUMS`. It uses the
+creates a draft GitHub release with three archives and `SHA256SUMS`. It uses the
 release notes from the tagged commit. Only this draft job has repository write
 permission. The workflow does not publish a release or write to a package
 registry.
@@ -75,5 +75,7 @@ Download the published archives from GitHub and verify their SHA-256 checksums.
 Run the archive for an available native target and check its version and scan
 behavior. Record the hosted checks and public download evidence in the plan.
 
-Homebrew formula updates, bottles, and registry publication have separate
-release steps. Do not start them as part of this native release procedure.
+Homebrew formula updates and bottles use the
+[tap maintenance procedure](https://github.com/btfranklin/homebrew-tap/blob/main/docs/maintaining.md).
+That procedure owns bottle builds, publication, and public installation checks.
+Registry publication has separate release gates in the plan.

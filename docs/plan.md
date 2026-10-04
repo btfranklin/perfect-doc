@@ -20,11 +20,11 @@ conformance, computed accessibility, browser rendering, or all catalog rules.
 | Reports | Human, JSON, JUnit, and SARIF formats are available. |
 | Python and npm packages | Local build paths are implemented. They are not published. |
 | Full accepted check catalog | Incomplete; see [usage limits](usage.md) and [checks](checks.md). |
-| Native target runtime checks | Passed on Linux x64, Windows x64, and both macOS CPUs. |
+| Native target runtime checks | Passed on Linux x64, Windows x64, and Apple Silicon macOS. |
 | Remote repository | Public source is hosted at `btfranklin/perfect-doc` on GitHub. |
-| Hosted CI | Passed on Linux x64, Windows x64, and both macOS CPUs. |
+| Hosted CI | Passed on Linux x64, Windows x64, and Apple Silicon macOS. |
 | GitHub native release | [v0.1.0](https://github.com/btfranklin/perfect-doc/releases/tag/v0.1.0) is public with four native archives and SHA-256 checksums. |
-| Registry publication and Homebrew | Not published. |
+| Homebrew | Public tap and bottles for Apple Silicon macOS and Linux x64; see [verification](#homebrew-verification). |
 
 Each diagnostic has a source location, rule, result, message, and repair help.
 It has a target when the check has one. Reports redact user information and
@@ -42,7 +42,7 @@ The local source checks passed:
 
 - 210 Rust tests, including property tests, controlled HTTP tests, source map
   checks, report checks, and public library and command tests.
-- 16 Python package, launcher, and native archive tests.
+- 15 Python package, launcher, and native archive tests after Intel macOS support was removed.
 - 140 repeated HTTP fixture runs with concurrent test processes after the
   accepted socket handling fix.
 - Python, Node.js, and Make integration examples with the native executable.
@@ -111,6 +111,50 @@ version, README, valid scan, and actionable broken-link checks on local macOS
 runtime linking. Linux, Windows, and Intel macOS runtime evidence comes from
 the native CI jobs that produced those exact released archives.
 
+The results above describe the original v0.1.0 release. Current macOS support
+requires Apple Silicon. Intel macOS is no longer supported and has no active
+build or package target. The original public release assets remain available.
+
+The [current native CI run](https://github.com/btfranklin/perfect-doc/actions/runs/37180310147)
+passed for commit `c3ed1049ab701d763c423d11d404d8eaf80280f6` on Apple Silicon
+macOS 15, Ubuntu 24.04 x64, and Windows Server 2025 x64. It checked Rust source,
+language integrations, package behavior, and extracted native archives. These
+new archives are CI outputs; the published v0.1.0 assets remain unchanged.
+
+## Homebrew verification
+
+The [public tap](https://github.com/btfranklin/homebrew-tap) provides the stable
+Perfect Doc 0.1.0 formula and prebuilt bottles. The formula uses the public
+v0.1.0 source archive. Its downloaded SHA-256 matched the formula checksum.
+macOS requires Apple Silicon; Intel macOS is not supported.
+
+The [bottle build run](https://github.com/btfranklin/homebrew-tap/actions/runs/37180069167)
+passed for the reviewed formula commit
+`02d6d5a620644445480a99c57c0b1c3770b070cb`. Both target jobs used Homebrew
+test-bot to build the source, create bottles, install those bottles, check
+linkage, and run the formula tests. The tested targets were Apple Silicon macOS
+15 (`arm64_sequoia`) and Ubuntu 24.04 x64 (`x86_64_linux`).
+
+The [publication run](https://github.com/btfranklin/homebrew-tap/actions/runs/37180565946)
+passed. Homebrew published those tested files, added their checksums to the
+formula, and created attestations. Both
+[public bottles](https://github.com/btfranklin/homebrew-tap/releases/tag/perfect-doc-0.1.0)
+were downloaded without credentials. Their SHA-256 checksums matched the formula
+and GitHub asset digests. Both attestations verified against the tap repository.
+
+The [public installation run](https://github.com/btfranklin/homebrew-tap/actions/runs/37180985423)
+passed on both targets on 2026-10-03 in `America/Phoenix`. Both fresh runners
+started with no registered tap or installed Perfect Doc. The checks confirmed
+the public tap origin and required `poured_from_bottle` in Homebrew's installed
+metadata. Both targets passed version output, a valid scan, a broken-link scan
+with repair help and source location, `brew test`, reinstall by the short name,
+and uninstall. The public bottles need no Rust compiler. Python is a test-helper
+dependency in the Linux workflow, not a Perfect Doc runtime dependency.
+
+The [tap maintenance guide](https://github.com/btfranklin/homebrew-tap/blob/main/docs/maintaining.md)
+owns the bottle and public installation procedure. Upgrade verification needs
+the next real source release. It has not been run for the first release.
+
 ## Capability work
 
 The original staged plan is now a status map. Core scanning, configuration,
@@ -154,7 +198,6 @@ the same executable. The configured targets are:
 | Rust target | npm platform package suffix | Native runtime evidence |
 | --- | --- | --- |
 | `aarch64-apple-darwin` | `darwin-arm64` | Local macOS and macOS 15 CI. |
-| `x86_64-apple-darwin` | `darwin-x64` | macOS 15 Intel CI. |
 | `x86_64-unknown-linux-gnu` | `linux-x64-gnu` | Ubuntu 24.04 x64 CI. |
 | `x86_64-unknown-linux-musl` | `linux-x64-musl` | Not run. |
 | `x86_64-pc-windows-msvc` | `win32-x64` | Windows Server 2025 x64 CI. |
